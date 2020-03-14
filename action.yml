@@ -1,0 +1,22 @@
+name: 'Generate Allure report'
+description: 'Generate Allure report from test data'
+inputs:
+  data-location:
+    description: 'Location of allure directory generated during test run'
+    required: true
+    default: 'allure-results'
+  report-location:
+    description: 'Location where report should be generated'
+    required: true
+    default: 'allure-report'
+  allure-location:
+    description: 'Location (URL) where zip archive with allure commandline can be found'
+    required: false
+    default: ''
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args: 
+    - ${{ inputs.data-location }}
+    - ${{ inputs.report-location }}
+    - ${{ inputs.allure-location }}

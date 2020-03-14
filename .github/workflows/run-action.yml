@@ -1,0 +1,78 @@
+on: [repository_dispatch, push]
+
+jobs:
+  run_action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v1
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: pip install --upgrade pip pytest allure-pytest
+
+      - name: Execute test cases
+        run: py.test tests --alluredir allure/data --clean-alluredir
+        continue-on-error: true
+
+      - name: Build allure report (latest version) with private action
+        if: always()
+        uses: ./
+        with:
+            data-location: allure/data
+            report-location: allure/report-latest-private
+
+      - name: Build allure report (fixed version) with private action
+        if: always()
+        uses: ./
+        with:
+            data-location: allure/data
+            report-location: allure/report-fixed-private
+            allure-location: https://dl.bintray.com/qameta/maven/io/qameta/allure/allure-commandline/2.13.0/allure-commandline-2.13.0.zip
+
+      - name: Build allure report (latest version) with public action
+        if: always()
+        uses: KillAChicken/generate-allure-report@v1
+        with:
+            data-location: allure/data
+            report-location: allure/report-latest-public
+
+      - name: Build allure report (fixed version) with public action
+        if: always()
+        uses: KillAChicken/generate-allure-report@v1
+        with:
+            data-location: allure/data
+            report-location: allure/report-fixed-public
+            allure-location: https://dl.bintray.com/qameta/maven/io/qameta/allure/allure-commandline/2.13.0/allure-commandline-2.13.0.zip
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: Allure Report for the latest version generated with private action
+          path: allure/report-latest-private
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: Allure Report for the fixed version generated with private action
+          path: allure/report-fixed-private
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: Allure Report for the latest version generated with public action
+          path: allure/report-latest-public
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: Allure Report for the fixed version generated with public action
+          path: allure/report-fixed-public
